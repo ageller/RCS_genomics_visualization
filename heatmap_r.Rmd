@@ -1,5 +1,5 @@
 ---
-title: An R Markdown document converted from "heatmap_r.ipynb"
+title: heatmap_r"
 output: html_document
 ---
 
@@ -8,21 +8,23 @@ output: html_document
 This notebook follows closely to [this online tutorial](https://training.galaxyproject.org/training-material/topics/transcriptomics/tutorials/rna-seq-viz-with-heatmap2/tutorial.html#create-heatmap-of-top-de-genes).  The datasets are available [here](https://zenodo.org/record/2529926#.YwaRPfHMIas) and should be downloaded into the ```data/heatmap``` directory (which you may have to create).
 
 
-*Note:* this Jupyter notebook was converted to an R markdown file using the following command in R :
+*Note:* this Jupyter notebook was converted to an R markdown file and then an html file using the following command in R :
 
-```nb_rmd = rmarkdown:::convert_ipynb('heatmap_r.ipynb')```
+```
+rmarkdown::convert_ipynb('heatmap_r.ipynb')
+rmarkdown::render('heatmap_r.Rmd')
+```
 
 ___
 *Author : Aaron M Geller, Aug. 2022*
 
 ```{r}
 # import the necessary libraries
-#library(dplyr)
-
+library(tidyr)
 library(ggplot2)
 ```
 
-## 1. Read in the DE results data using ```pandas```.
+## 1. Read in the DE results data using ```read.table```.
 
 ```{r}
 DE_results <- read.table('data/heatmap/limma-voom_luminalpregnant-luminallactate.tsv', sep='\t', header=TRUE)
@@ -36,5 +38,94 @@ head(DE_results)
 ```{r}
 df <- DE_results[which(DE_results['adj.P.Val'] < 0.01 & abs(DE_results['logFC']) > 0.58),]
 head(df)
+```
+
+### 2.2. Sort by ```P.Value``` (in ascending order).
+
+```{r}
+df <- df[order(df$P.Value),]
+```
+
+### 2.3. Select the top 20 for the plot.
+
+```{r}
+DE_results_sig <- head(df, 20)
+
+DE_results_sig
+```
+
+## 3. Read in the normalized counts data using ```read.table```.
+
+```{r}
+normalized_counts = read.table('data/heatmap/limma-voom_normalised_counts.tsv', sep='\t', header=TRUE)
+head(normalized_counts)
+```
+
+## 4. Match the normalized counts to our ```DE_results_sig``` dataframe.
+
+We will use ```merge``` with the ```ENTREZID``` column.
+
+```{r}
+DE_results_sig_counts <- merge(DE_results_sig, normalized_counts, by = 'ENTREZID', suffixes = c('','_counts'))
+names(DE_results_sig_counts)
+```
+
+## 5. Create a heatmap using ```ggplot2```.
+
+The y-axis will show the ```SYMBOL``` values.  The x-axis will show the ```MCL.*``` column names.  The colors will be defined by the respective ```MCL.*``` values.  
+
+### 5.1. Select only the columns that we want to show in the plot.
+
+```{r}
+# create a mask that has values of True for the columns that have names with 'SYMBOL' and 'MCL1.''
+mask <- grepl('MCL1.|SYMBOL', names(DE_results_sig_counts))
+
+# remove the 'SYMBOL_counts' column (from the normalized counts file). 
+# Note: this is only necessary here because the 'SYMBOL' column exists in both data files 
+#   (and I renamed the 'SYMBOL' column in the normalized counts file to be 'SYMBOL_counts' during the merge.) 
+mask <- mask & !grepl('SYMBOL_counts', names(DE_results_sig_counts))
+
+# apply the mask
+df <- DE_results_sig_counts[, mask]
+```
+
+### MISSING STEPS
+
+```{r}
+# rescale
+```
+
+```{r}
+# prepare data for ggplot
+df_long <- pivot_longer(
+    data = df,
+    cols = -c(SYMBOL),
+    names_to = "measurement",
+    values_to = "value"
+)
+head(df_long)
+```
+
+### 5.X. Use ```ggplot```'s heatmap function.
+
+```{r}
+options(jupyter.plot_mimetypes = "image/png", repr.plot.width = 4, repr.plot.height = 4, repr.plot.res = 300)
+
+heatmap_plot <- ggplot(data = df_long, aes(x = measurement, y = SYMBOL)) +
+    geom_tile(aes(fill = value)) +
+    scale_fill_gradient2(limits = c(-1,1), name = 'Renormalized Counts') +
+    guides(
+        size = "none",
+        color = guide_colorbar(title.position = "right")
+    ) +
+    theme(axis.text.y = element_text(size = 6), 
+        legend.key.height = unit(0.25, "in"),
+        legend.title = element_text(size = 12, angle = 90),
+        legend.title.align = 0.5,
+        legend.direction = "vertical"
+    ) +
+    labs(x = '', y = '') 
+
+heatmap_plot
 ```
 
