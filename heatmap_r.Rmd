@@ -1,0 +1,40 @@
+---
+title: An R Markdown document converted from "heatmap_r.ipynb"
+output: html_document
+---
+
+# Heatmap of differentially expressed genes in an RNA-seq dataset
+
+This notebook follows closely to [this online tutorial](https://training.galaxyproject.org/training-material/topics/transcriptomics/tutorials/rna-seq-viz-with-heatmap2/tutorial.html#create-heatmap-of-top-de-genes).  The datasets are available [here](https://zenodo.org/record/2529926#.YwaRPfHMIas) and should be downloaded into the ```data/heatmap``` directory (which you may have to create).
+
+
+*Note:* this Jupyter notebook was converted to an R markdown file using the following command in R :
+
+```nb_rmd = rmarkdown:::convert_ipynb('heatmap_r.ipynb')```
+
+___
+*Author : Aaron M Geller, Aug. 2022*
+
+```{r}
+# import the necessary libraries
+#library(dplyr)
+
+library(ggplot2)
+```
+
+## 1. Read in the DE results data using ```pandas```.
+
+```{r}
+DE_results <- read.table('data/heatmap/limma-voom_luminalpregnant-luminallactate.tsv', sep='\t', header=TRUE)
+head(DE_results)
+```
+
+## 2. Filter the results to only include the most significant genes.
+
+### 2.1. Set a threshold for ```adj.P.Val < 0.01``` and ```abs(logFC) > 0.58```.
+
+```{r}
+df <- DE_results[which(DE_results['adj.P.Val'] < 0.01 & abs(DE_results['logFC']) > 0.58),]
+head(df)
+```
+
