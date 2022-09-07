@@ -1,10 +1,17 @@
 # RCS Genomics Visualization
 Tutorials on how to create typical plots with genomics data
 
+## Conda environment
+
+for Python: 
+
+```
+conda create --name genomics -c conda-forge python=3.10 pandas matplotlib jupyter seaborn
+```
 
 ## Downloading data
 
-I did not include the data here because it is already hosted online elsewhere.  In order to run the notebooks in this repo, you need to do the following:
+I did not include the data here because it is already hosted online elsewhere.  I included a cell in the Python notebook to download the data.  Alternatively, you can do it manually following:
 
 1. Create directories here for ```data/heatmap``` and ```data/circos```
 2. In ```data/heatmap``` download the files from [here](https://zenodo.org/record/2529926#.YwaRPfHMIas).
