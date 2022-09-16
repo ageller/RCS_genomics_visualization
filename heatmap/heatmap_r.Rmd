@@ -7,7 +7,7 @@ output: html_document
 
 This notebook follows closely to [this online tutorial](https://training.galaxyproject.org/training-material/topics/transcriptomics/tutorials/rna-seq-viz-with-heatmap2/tutorial.html#create-heatmap-of-top-de-genes). The datasets are available [here](https://zenodo.org/record/2529926#.YwaRPfHMIas) and should be downloaded into the `data` directory (which you may have to create).
 
-*Note:* this Jupyter notebook was converted to an R markdown file and then an html file using the following command in R :
+*Note:* this Jupyter notebook was converted to an R markdown file and then an html file using the following commands in R :
 
     rmarkdown::convert_ipynb('heatmap_r.ipynb')
     rmarkdown::render('heatmap_r.Rmd')
