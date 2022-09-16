@@ -11,7 +11,7 @@
 
 
 
-<title>heatmap_r</title>
+<title>heatmap_r”</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -354,6 +354,7 @@ display: none;
 
 
 
+
 </div>
 
 
@@ -361,8 +362,8 @@ display: none;
 <h1>Heatmap of differentially expressed genes in an RNA-seq dataset</h1>
 <p>This notebook follows closely to <a href="https://training.galaxyproject.org/training-material/topics/transcriptomics/tutorials/rna-seq-viz-with-heatmap2/tutorial.html#create-heatmap-of-top-de-genes">this
 online tutorial</a>. The datasets are available <a href="https://zenodo.org/record/2529926#.YwaRPfHMIas">here</a> and
-should be downloaded into the <code>data/heatmap</code> directory (which
-you may have to create).</p>
+should be downloaded into the <code>data</code> directory (which you may
+have to create).</p>
 <p><em>Note:</em> this Jupyter notebook was converted to an R markdown
 file and then an html file using the following command in R :</p>
 <pre><code>rmarkdown::convert_ipynb(&#39;heatmap_r.ipynb&#39;)
@@ -372,10 +373,10 @@ rmarkdown::render(&#39;heatmap_r.Rmd&#39;)</code></pre>
 <pre class="r"><code># Run this cell to create the data directory and download the sample data.
 # On subsequent runs of this notebook, you can skip this step
 
-directory = file.path(getwd(), &#39;data&#39;,&#39;heatmap&#39;)
+directory = file.path(getwd(), &#39;data&#39;)
 dir.create(directory)</code></pre>
 <pre><code>## Warning in dir.create(directory): &#39;C:
-## \Users\ageller\NUIT\genomics\RCS_genomics_visualization\data\heatmap&#39; already
+## \Users\ageller\NUIT\genomics\RCS_genomics_visualization\heatmap\data&#39; already
 ## exists</code></pre>
 <pre class="r"><code>download.file(&#39;https://zenodo.org/record/2529926/files/heatmap_genes?download=1&#39;, 
     file.path(directory, &#39;heatmap_genes.txt&#39;))
@@ -388,7 +389,7 @@ library(tidyr)
 library(ggplot2)</code></pre>
 <div id="read-in-the-de-results-data-using-read.delim." class="section level2">
 <h2>1. Read in the DE results data using <a href="https://www.rdocumentation.org/packages/utils/versions/3.6.2/topics/read.table"><code>read.delim</code></a>.</h2>
-<pre class="r"><code>DE_results &lt;- read.delim(&#39;data/heatmap/limma-voom_luminalpregnant-luminallactate.tsv&#39;, sep=&#39;\t&#39;, header=TRUE)
+<pre class="r"><code>DE_results &lt;- read.delim(&#39;data/limma-voom_luminalpregnant-luminallactate.tsv&#39;, sep=&#39;\t&#39;, header=TRUE)
 head(DE_results)</code></pre>
 <pre><code>##   ENTREZID  SYMBOL
 ## 1    12992 Csn1s2b
@@ -499,7 +500,7 @@ DE_results_sig</code></pre>
 </div>
 <div id="read-in-the-normalized-counts-data-using-read.delim." class="section level2">
 <h2>3. Read in the normalized counts data using <a href="https://www.rdocumentation.org/packages/utils/versions/3.6.2/topics/read.table"><code>read.delim</code></a>.</h2>
-<pre class="r"><code>normalized_counts = read.delim(&#39;data/heatmap/limma-voom_normalised_counts.tsv&#39;, sep=&#39;\t&#39;, header=TRUE)
+<pre class="r"><code>normalized_counts = read.delim(&#39;data/limma-voom_normalised_counts.tsv&#39;, sep=&#39;\t&#39;, header=TRUE)
 head(normalized_counts)</code></pre>
 <pre><code>##   ENTREZID SYMBOL                                  GENENAME   MCL1.DG   MCL1.DH
 ## 1   497097   Xkr4         X-linked Kx blood group related 4  3.932532  3.507368

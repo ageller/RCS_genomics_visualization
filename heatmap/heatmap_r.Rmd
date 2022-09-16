@@ -5,7 +5,7 @@ output: html_document
 
 # Heatmap of differentially expressed genes in an RNA-seq dataset
 
-This notebook follows closely to [this online tutorial](https://training.galaxyproject.org/training-material/topics/transcriptomics/tutorials/rna-seq-viz-with-heatmap2/tutorial.html#create-heatmap-of-top-de-genes). The datasets are available [here](https://zenodo.org/record/2529926#.YwaRPfHMIas) and should be downloaded into the `data/heatmap` directory (which you may have to create).
+This notebook follows closely to [this online tutorial](https://training.galaxyproject.org/training-material/topics/transcriptomics/tutorials/rna-seq-viz-with-heatmap2/tutorial.html#create-heatmap-of-top-de-genes). The datasets are available [here](https://zenodo.org/record/2529926#.YwaRPfHMIas) and should be downloaded into the `data` directory (which you may have to create).
 
 *Note:* this Jupyter notebook was converted to an R markdown file and then an html file using the following command in R :
 
@@ -20,7 +20,7 @@ This notebook follows closely to [this online tutorial](https://training.galaxyp
 # Run this cell to create the data directory and download the sample data.
 # On subsequent runs of this notebook, you can skip this step
 
-directory = file.path(getwd(), 'data','heatmap')
+directory = file.path(getwd(), 'data')
 dir.create(directory)
 
 download.file('https://zenodo.org/record/2529926/files/heatmap_genes?download=1', 
@@ -40,7 +40,7 @@ library(ggplot2)
 ## 1. Read in the DE results data using [`read.delim`](https://www.rdocumentation.org/packages/utils/versions/3.6.2/topics/read.table).
 
 ```{r}
-DE_results <- read.delim('data/heatmap/limma-voom_luminalpregnant-luminallactate.tsv', sep='\t', header=TRUE)
+DE_results <- read.delim('data/limma-voom_luminalpregnant-luminallactate.tsv', sep='\t', header=TRUE)
 head(DE_results)
 ```
 
@@ -71,7 +71,7 @@ DE_results_sig
 ## 3. Read in the normalized counts data using [`read.delim`](https://www.rdocumentation.org/packages/utils/versions/3.6.2/topics/read.table).
 
 ```{r}
-normalized_counts = read.delim('data/heatmap/limma-voom_normalised_counts.tsv', sep='\t', header=TRUE)
+normalized_counts = read.delim('data/limma-voom_normalised_counts.tsv', sep='\t', header=TRUE)
 head(normalized_counts)
 ```
 
