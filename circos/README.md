@@ -1,6 +1,6 @@
 # Circos example for cancer data
 
-The notebooks here follow closely to [this online tutorial](https://training.galaxyproject.org/training-material/topics/visualisation/tutorials/circos/tutorial.html).
+The notebooks here follow closely to [this online tutorial](https://training.galaxyproject.org/training-material/topics/visualisation/tutorials/circos/tutorial.html#example-cancer-genomics).
 
 There is both a Python and R version showing the same workflow, analyzing the same data and producing the same plot.  The Python version is available in a Jupyter notebook .ipynb file.  The R version is also available as a .ipynb file, and also as an R Markdown (.Rmd) file and a rendered .html file.
 
