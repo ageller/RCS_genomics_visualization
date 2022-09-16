@@ -1,22 +1,35 @@
 ---
-title: heatmap_r"
+title: An R Markdown document converted from "heatmap_r.ipynb"
 output: html_document
 ---
 
 # Heatmap of differentially expressed genes in an RNA-seq dataset
 
-This notebook follows closely to [this online tutorial](https://training.galaxyproject.org/training-material/topics/transcriptomics/tutorials/rna-seq-viz-with-heatmap2/tutorial.html#create-heatmap-of-top-de-genes).  The datasets are available [here](https://zenodo.org/record/2529926#.YwaRPfHMIas) and should be downloaded into the ```data/heatmap``` directory (which you may have to create).
-
+This notebook follows closely to [this online tutorial](https://training.galaxyproject.org/training-material/topics/transcriptomics/tutorials/rna-seq-viz-with-heatmap2/tutorial.html#create-heatmap-of-top-de-genes). The datasets are available [here](https://zenodo.org/record/2529926#.YwaRPfHMIas) and should be downloaded into the `data/heatmap` directory (which you may have to create).
 
 *Note:* this Jupyter notebook was converted to an R markdown file and then an html file using the following command in R :
 
-```
-rmarkdown::convert_ipynb('heatmap_r.ipynb')
-rmarkdown::render('heatmap_r.Rmd')
-```
+    rmarkdown::convert_ipynb('heatmap_r.ipynb')
+    rmarkdown::render('heatmap_r.Rmd')
 
-___
+------------------------------------------------------------------------
+
 *Author : Aaron M Geller, Aug. 2022*
+
+```{r}
+# Run this cell to create the data directory and download the sample data.
+# On subsequent runs of this notebook, you can skip this step
+
+directory = file.path(getwd(), 'data','heatmap')
+dir.create(directory)
+
+download.file('https://zenodo.org/record/2529926/files/heatmap_genes?download=1', 
+    file.path(directory, 'heatmap_genes.txt'))
+download.file('https://zenodo.org/record/2529926/files/limma-voom_luminalpregnant-luminallactate?download=1', 
+    file.path(directory, 'limma-voom_luminalpregnant-luminallactate.tsv'))
+download.file('https://zenodo.org/record/2529926/files/limma-voom_normalised_counts?download=1', 
+    file.path(directory, 'limma-voom_normalised_counts.tsv'))
+```
 
 ```{r}
 # import the necessary libraries
@@ -24,23 +37,24 @@ library(tidyr)
 library(ggplot2)
 ```
 
-## 1. Read in the DE results data using ```read.table```.
+## 1. Read in the DE results data using [`read.delim`](https://www.rdocumentation.org/packages/utils/versions/3.6.2/topics/read.table).
 
 ```{r}
-DE_results <- read.table('data/heatmap/limma-voom_luminalpregnant-luminallactate.tsv', sep='\t', header=TRUE)
+DE_results <- read.delim('data/heatmap/limma-voom_luminalpregnant-luminallactate.tsv', sep='\t', header=TRUE)
 head(DE_results)
 ```
 
 ## 2. Filter the results to only include the most significant genes.
 
-### 2.1. Set a threshold for ```adj.P.Val < 0.01``` and ```abs(logFC) > 0.58```.
+### 2.1. Set a threshold for `adj.P.Val < 0.01` and `abs(logFC) > 0.58`.
+
+Note, these threshold values are simply taken from the [online tutorial](https://training.galaxyproject.org/training-material/topics/transcriptomics/tutorials/rna-seq-viz-with-heatmap2/tutorial.html#create-heatmap-of-top-de-genes) that we are following. Your most appropriate threshold values may be different, depending on your research.
 
 ```{r}
 df <- DE_results[which(DE_results['adj.P.Val'] < 0.01 & abs(DE_results['logFC']) > 0.58),]
-head(df)
 ```
 
-### 2.2. Sort by ```P.Value``` (in ascending order).
+### 2.2. Sort by `P.Value` (in ascending order).
 
 ```{r}
 df <- df[order(df$P.Value),]
@@ -54,25 +68,27 @@ DE_results_sig <- head(df, 20)
 DE_results_sig
 ```
 
-## 3. Read in the normalized counts data using ```read.table```.
+## 3. Read in the normalized counts data using [`read.delim`](https://www.rdocumentation.org/packages/utils/versions/3.6.2/topics/read.table).
 
 ```{r}
-normalized_counts = read.table('data/heatmap/limma-voom_normalised_counts.tsv', sep='\t', header=TRUE)
+normalized_counts = read.delim('data/heatmap/limma-voom_normalised_counts.tsv', sep='\t', header=TRUE)
 head(normalized_counts)
 ```
 
-## 4. Match the normalized counts to our ```DE_results_sig``` dataframe.
+## 4. Match the normalized counts to our `DE_results_sig` dataframe.
 
-We will use ```merge``` with the ```ENTREZID``` column.
+We will use `merge` with the `ENTREZID` column.
 
 ```{r}
-DE_results_sig_counts <- merge(DE_results_sig, normalized_counts, by = 'ENTREZID', suffixes = c('','_counts'))
-names(DE_results_sig_counts)
+DE_results_sig$id <- 1:nrow(DE_results_sig) # so that we can keep the same order (for the plot as well)
+DE_results_sig_counts <- merge(DE_results_sig, normalized_counts, by = 'ENTREZID', suffixes = c('','_counts'), all.x = TRUE)
+DE_results_sig_counts <- DE_results_sig_counts[order(DE_results_sig_counts$id), ]
+DE_results_sig_counts
 ```
 
-## 5. Create a heatmap using ```ggplot2```.
+## 5. Create a heatmap using [`ggplot2`](https://ggplot2.tidyverse.org/).
 
-The y-axis will show the ```SYMBOL``` values.  The x-axis will show the ```MCL.*``` column names.  The colors will be defined by the respective ```MCL.*``` values.  
+The y-axis will show the `SYMBOL` values. The x-axis will show the `MCL.*` column names. The colors will be defined by the respective `MCL.*` values.
 
 ### 5.1. Select only the columns that we want to show in the plot.
 
@@ -87,45 +103,121 @@ mask <- mask & !grepl('SYMBOL_counts', names(DE_results_sig_counts))
 
 # apply the mask
 df <- DE_results_sig_counts[, mask]
+df
 ```
 
-### MISSING STEPS
+### 5.2. (Optional) Set the rownames of the dataframe to be the `SYMBOL` names.
+
+This is only required if you plan to rescale the data (see the following cells)
 
 ```{r}
-# rescale
+row.names(df) <- df$SYMBOL
+df <- subset(df, select = -c(SYMBOL) ) # remove the SYMBOL column (since it is now the row name)
+df
 ```
+
+### 5.3. (Optional) scale each row to go from -1 to 1.
+
+Note that this rescaling is done here to makes it easier to visually identify which cell-types show the same pattern of up or down regulation for specific sets of genes (regardless of the magnitude of change across genes). This step may not be necessary for all data sets. In particular, if it is important to compare the magnitudes of the change between different genes, this rescaling should be skipped.
+
+```{r}
+library(data.table) # to use the transpose function
+```
+
+```{r}
+# this will be easier if we transpose the dataframe first
+
+# transpose data frame
+tmp <- transpose(df)
+
+# redefine row and column names
+rownames(tmp) <- colnames(df)
+colnames(tmp) <- rownames(df)
+
+# rescale each column 
+for(i in 1:ncol(tmp)) {
+    c <- colnames(tmp)[i]
+    data <- tmp[c]
+    norm <- 2.*(data - min(data))/(max(data) - min(data)) - 1 # normalize the data
+    tmp[c] <- norm
+}
+
+df <- transpose(tmp)
+# redefine row and column names
+rownames(df) <- colnames(tmp)
+colnames(df) <- rownames(tmp)
+df
+```
+
+### 5.4. Use [`ggplot2`](https://ggplot2.tidyverse.org/)'s [`geom_tile`](https://ggplot2.tidyverse.org/reference/geom_tile.html) function to create the heatmap.
+
+-   First we will need to reformat the data for `ggplot`, using [`pivot_longer`](https://tidyr.tidyverse.org/reference/pivot_longer.html).
+-   Define a colormap going from blue - white - red symmetric around zero using [`scale_fill_gradient2`](https://ggplot2.tidyverse.org/reference/scale_gradient.html).
+-   Use [`guides`](https://ggplot2.tidyverse.org/reference/guides.html) and [`theme`](https://ggplot2.tidyverse.org/reference/theme.html) to set the formatting details of the plot.
 
 ```{r}
 # prepare data for ggplot
+
+# add back the SYMBOL column (but only if you removed it above during rescaling)
+df$SYMBOL <- rownames(df) 
+
+# pivot_longer reformats the data table so ggplot can ingest it (see the format printed out below) 
 df_long <- pivot_longer(
     data = df,
     cols = -c(SYMBOL),
     names_to = "measurement",
     values_to = "value"
 )
+
+# set the symbol type to be factor for ggplot
+df_long$SYMBOL <- factor(df_long$SYMBOL, levels = unique(as.character(df_long$SYMBOL)))
+
 head(df_long)
 ```
 
-### 5.X. Use ```ggplot```'s heatmap function.
+```{r fig.height=4, fig.width=6, message=TRUE, warning=FALSE, paged.print=FALSE}
 
-```{r}
-options(jupyter.plot_mimetypes = "image/png", repr.plot.width = 4, repr.plot.height = 4, repr.plot.res = 300)
-
-heatmap_plot <- ggplot(data = df_long, aes(x = measurement, y = SYMBOL)) +
+heatmap_plot <- ggplot(data = df_long, aes(x = measurement, y = SYMBOL )) +
     geom_tile(aes(fill = value)) +
-    scale_fill_gradient2(limits = c(-1,1), name = 'Renormalized Counts') +
-    guides(
-        size = "none",
-        color = guide_colorbar(title.position = "right")
+    scale_y_discrete(limits = rev) + # reverse the order on the y axis to match the order of the input dataframe
+    scale_fill_gradient2( # define the colormap
+        limits = c(-1,1),
+        midpoint = 0,
+        name = 'Renormalized Counts', 
+        low = "#0000FF", 
+        mid = "white", 
+        high = "#FF0000"
     ) +
-    theme(axis.text.y = element_text(size = 6), 
-        legend.key.height = unit(0.25, "in"),
-        legend.title = element_text(size = 12, angle = 90),
-        legend.title.align = 0.5,
-        legend.direction = "vertical"
+    guides( # to help position the colorbar
+        fill = guide_colorbar(title.position = "right")
     ) +
-    labs(x = '', y = '') 
+    theme_classic() + # there are many themes to choose from : https://ggplot2.tidyverse.org/reference/ggtheme.html
+    theme( # apply formatting
+        axis.line = element_blank(), # remove the remaining axis lines
+        axis.text.x = element_text(size = 10, angle = 45, vjust = 0.5), # increase the x axis text and rotate
+        axis.text.y = element_text(size = 10),  # increase the y axis text
+        legend.direction = "vertical",
+        legend.key.height = unit(0.62, "in"), # increase the size of the legend (trying to make it the full size of the figure)
+        legend.title = element_text(size = 12, angle = 90), # increase the legend text size and rotate it 90deg
+        legend.title.align = 0.5, # center the legend title 
+    ) +
+    labs(x = '', y = '') # remove the axis titles
 
 heatmap_plot
+
+# save the figure to a png file
+ggsave("DE_heatmap_r.png", width = 6, height = 4, dpi = 100)
 ```
 
+## Relevant documentation links:
+
+-   [tidyr library](https://tidyr.tidyverse.org/)
+-   [ggplot2 library](https://ggplot2.tidyverse.org/)
+-   [data.table library](https://cran.r-project.org/web/packages/data.table/vignettes/datatable-intro.html)
+-   [read.table (also including read.delim)](https://www.rdocumentation.org/packages/utils/versions/3.6.2/topics/read.table)
+-   [pivot_longer](https://tidyr.tidyverse.org/reference/pivot_longer.html).
+-   [geom_tile](https://ggplot2.tidyverse.org/reference/geom_tile.html)
+-   [scale_fill_gradient2](https://ggplot2.tidyverse.org/reference/scale_gradient.html).
+-   [guides](https://ggplot2.tidyverse.org/reference/guides.html)
+-   [theme](https://ggplot2.tidyverse.org/reference/theme.html)
+-   [available pre-made themes for ggplot2](https://ggplot2.tidyverse.org/reference/ggtheme.html)
