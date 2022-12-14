@@ -7,6 +7,7 @@ for Python:
 
 ```
 conda create --name genomics -c conda-forge python=3.10 pandas matplotlib jupyter seaborn
+pip install python-circos
 ```
 
 for R:
