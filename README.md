@@ -6,7 +6,7 @@ Tutorials on how to create typical plots with genomics data
 for Python: 
 
 ```
-conda create --name genomics -c conda-forge python=3.10 pandas matplotlib jupyter seaborn
+conda create --name genomics -c conda-forge python=3.10 pandas matplotlib jupyter seaborn requests
 pip install python-circos
 ```
 
