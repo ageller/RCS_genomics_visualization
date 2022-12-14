@@ -12,5 +12,5 @@ conda create --name genomics -c conda-forge python=3.10 pandas matplotlib jupyte
 for R:
 
 ```
-conda create --name r4-genomics -c conda-forge r-base=4.1.3 jupyter r-irkernel r-ggplot2 r-markdown r-tidyr r-data.table
+conda create --name r4-genomics -c conda-forge r-base=4.1.3 jupyter r-irkernel r-ggplot2 r-markdown r-tidyr r-data.table r-rcircos
 ```
